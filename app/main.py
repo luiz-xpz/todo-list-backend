@@ -1,12 +1,36 @@
+
+"""Ponto de entrada: cria o app e registra as rotas."""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
+from app.api.routers import usuario
+from app.db.database import criar_tabelas
+
+
+@asynccontextmanager
+async def ciclo_de_vida(app: FastAPI) -> AsyncIterator[None]:
+    """Prepara o banco na subida da aplicação: cria as tabelas que faltam."""
+    criar_tabelas()
+    yield
+
+
 app = FastAPI(
-    title = "Todo List API",
-    description = "Back end sistema todo list",
-    version = "0.0.1",
+    title="Todo List API",
+    description="Backend do ToDo List — curso Desenvolvedor Full Stack (SENAC).",
+    version="0.2.0",
+    lifespan=ciclo_de_vida,
 )
 
-@app.get("/", tags=["Status"], summary = "verificar se a api está no ar")
+app.include_router(usuario.router)
 
-def raiz() -> dict [str, str]:
-    return {"mensagem": "todo-lsit online", "documentacao": "/docs"}
+
+@app.get("/", tags=["Status"], summary="Verificar se a API está no ar")
+def raiz() -> dict[str, str]:
+    """Confirma que a API está funcionando e indica onde está a documentação."""
+    return {
+        "mensagem": "Todo List API no ar",
+        "documentacao": "/docs",
+    }
