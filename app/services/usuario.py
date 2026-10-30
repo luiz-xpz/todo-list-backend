@@ -21,7 +21,7 @@ class UsuarioServico:
             EmailJaCadastrado: se o e-mail já estiver em uso (RN-01).
         """
 
-        if self.repositorio.email_existe(email):
+        if self._repositorio.email_existe(email):
             raise EmailJaCadastrado()
             
         usuario = Usuario(nome=nome, email=email)
