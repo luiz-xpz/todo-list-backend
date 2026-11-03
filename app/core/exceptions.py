@@ -1,4 +1,3 @@
-
 """Exceções de domínio (ou de negócio) da aplicação.
 """
 
@@ -48,3 +47,14 @@ class EmailJaCadastrado(ErroDeDominio):
     """
 
     mensagem = "Já existe uma conta com este e-mail."
+
+class NaoAutenticado(ErroDeDominio):
+    """Família dos erros de identidade - a camada HTTP traduz em 401"""
+    mensagem = "É preciso entrar na conta para continuar."
+
+class CredenciaisInvalidas(NaoAutenticado):
+    """E-mail inexistente ou senha incorrea."""
+    mensagem = "E-mail ou senha incorretos."
+class TokenInvalido(NaoAutenticado):
+    """Token de acesso ausente, expirado, adulterado ou de usuário removido."""
+    mensagem = "Sessão invalida. Entre novamente"

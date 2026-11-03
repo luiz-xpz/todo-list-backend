@@ -22,6 +22,12 @@ class UsuarioCreate(EsquemaDeEntrada):
                 f"A senha pode ter no máximo {LIMITE_BYTES_SENHA} bytes."
             )
         return senha
+
+class UsuarioLogin(EsquemaDeEntrada):
+    """Dados recebidos para realizar o login."""
+
+    email: EmailStr
+    senha: str = Field(min_length=1)
  
  
 class UsuarioOut(EsquemaDeSaida):
@@ -35,3 +41,13 @@ class UsuarioOut(EsquemaDeSaida):
     nome: str
     email: EmailStr
     criado_em: DataHoraUTC
+
+class SessaoOut(EsquemaDeSaida):
+    """Resposta do login: o token de acesso e  quem está logado.
+    O cliente guarda `accessToken` e o envia em toda requisição protegida, no
+    cabeçalho `Authorization: Bearer <accessToken>`.
+    """
+    access_token: str
+    token_type: str = "bearer"
+    expira_em: DataHoraUTC
+    usuario: UsuarioOut
