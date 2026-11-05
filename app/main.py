@@ -19,8 +19,6 @@ from app.core.exceptions import (
 )
 from app.db.database import criar_tabelas
 
-# Cada família de erro de domínio corresponde a um código HTTP. A ordem
-# importa: vale o primeiro tipo que casar, do mais específico ao mais geral.
 STATUS_POR_ERRO: tuple[tuple[type[ErroDeDominio], int], ...] = (
     (RecursosNaoEncontrado, 404),
     (EmailJaCadastrado, 409),
@@ -117,8 +115,7 @@ async def tratar_erro_de_validacao(
 app.include_router(usuario.router)
 
 
-@app.get("/status", summary="Verificar se a API está no ar")
+@app.get("/", tags=["Status"], summary="Verificar se a API está no ar")
 def raiz() -> dict[str, str]:
     """Confirma que a API está no ar e indica onde está a documentação."""
-
     return {"mensagem": "Todo List API no ar", "documentacao": "/docs"}
