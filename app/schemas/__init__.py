@@ -10,6 +10,7 @@ camelCase quanto o nome em Python na entrada.
 """
 
 from app.schemas.base import DataHoraUTC, EsquemaDeEntrada, EsquemaDeSaida
+from app.schemas.tarefas import TarefaCreate, TarefaOut
 from app.schemas.usuario import SessaoOut, UsuarioCreate, UsuarioLogin, UsuarioOut
 
 __all__ = [
@@ -17,6 +18,8 @@ __all__ = [
     "EsquemaDeEntrada",
     "EsquemaDeSaida",
     "SessaoOut",
+    "TarefaCreate",
+    "TarefaOut"
     "UsuarioCreate",
     "UsuarioLogin",
     "UsuarioOut",

@@ -8,23 +8,23 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api.routers import usuario
+from app.api.routers import tasks, usuario
 from app.core.config import obter_configuracao
 from app.core.exceptions import (
     EmailJaCadastrado,
     ErroDeDominio,
+    NaoAutenticado,
     RecursosNaoEncontrado,
     RegraDeNegocioViolada,
-    NaoAutenticado,
 )
 from app.db.database import criar_tabelas
 
 STATUS_POR_ERRO: tuple[tuple[type[ErroDeDominio], int], ...] = (
     (RecursosNaoEncontrado, 404),
     (EmailJaCadastrado, 409),
-    (RegraDeNegocioViolada, 422),
-    (ErroDeDominio, 401),
     (NaoAutenticado, 401),
+    (RegraDeNegocioViolada, 422),
+    (ErroDeDominio, 400),
 )
 
 
@@ -83,7 +83,6 @@ def _mensagem_de_validacao(erro: dict[str, Any]) -> tuple[str, str]:
         "float_parsing": f"O campo '{campo}' precisa ser um número.",
         "is_instance_of": f"O campo '{campo}' precisa ser do tipo correto.",
         "less_than": f"O campo '{campo}' pode ser no máximo {ctx.get('lt')}.",
-        "json_invalid": "O corpo da requisição não é um JSON válido.",
     }
 
     if tipo == "value_error":
@@ -108,11 +107,15 @@ async def tratar_erro_de_validacao(
 
     return JSONResponse(
         status_code=422,
-        content={"detail": erros[0]["mensagem"] if erros else "Dados inválidos.", "erros": erros},
+        content={
+            "detail": erros[0]["mensagem"] if erros else "Dados inválidos.",
+            "erros": erros,
+        },
     )
 
 
 app.include_router(usuario.router)
+app.include_router(tasks.router)
 
 
 @app.get("/", tags=["Status"], summary="Verificar se a API está no ar")

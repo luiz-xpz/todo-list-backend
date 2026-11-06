@@ -30,6 +30,8 @@ class RegraDeNegocioViolada(ErroDeDominio):
 
     mensagem = "Operação recusada por uma regra de negócio."
 
+class TituloObrigatorio(RegraDeNegocioViolada):
+    mensagem = "O título da tarefa não pode ficar vazio"
 
 class ValorInvalido(RegraDeNegocioViolada):
     """Valor fora do conjunto aceito por um campo do domínio."""
@@ -37,23 +39,25 @@ class ValorInvalido(RegraDeNegocioViolada):
     mensagem = "Valor inválido para o campo."
 
 #----------------------------------------------------------------------------
-# Conflito -- a camada HTTP traduz esta familia em 409
+# Conflito e autenticação -- Traduzidos em 409 e 401
 #----------------------------------------------------------------------------
 
 class EmailJaCadastrado(ErroDeDominio):
     """RN-01: um email não pode ser usado por dois usuários.
-
     A mensagem é a mesma que o front-end já exibe hoje no cadastro.
     """
 
     mensagem = "Já existe uma conta com este e-mail."
 
 class NaoAutenticado(ErroDeDominio):
-    """Família dos erros de identidade - a camada HTTP traduz em 401"""
+    """Família dos erros de identidade - a camada HTTP traduz em 401."""
     mensagem = "É preciso entrar na conta para continuar."
 
 class CredenciaisInvalidas(NaoAutenticado):
-    """E-mail inexistente ou senha incorrea."""
+    """E-mail inexistente ou senha incorrea.
+    A mensagem é deliberadamente a mesma nos dois casos: dizer que o e-mail
+    não existe revelaria a um atacante quais endereços estão cadastrados.
+    """
     mensagem = "E-mail ou senha incorretos."
 class TokenInvalido(NaoAutenticado):
     """Token de acesso ausente, expirado, adulterado ou de usuário removido."""
