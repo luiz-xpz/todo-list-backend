@@ -22,6 +22,9 @@ class RecursosNaoEncontrado(ErroDeDominio):
 class UsuarioNaoEncontrado(RecursosNaoEncontrado):
     mensagem = "Usuário não encontrado."
 
+class TarefaNaoEncontrada(RecursosNaoEncontrado):
+    mensagem = "Tarefa não encontrada."
+
 #----------------------------------------------------------------------------
 # Regra de negócio violada -- a camada HTTP traduz esta familia em 422
 #----------------------------------------------------------------------------
@@ -31,7 +34,7 @@ class RegraDeNegocioViolada(ErroDeDominio):
     mensagem = "Operação recusada por uma regra de negócio."
 
 class TituloObrigatorio(RegraDeNegocioViolada):
-    mensagem = "O título da tarefa não pode ficar vazio"
+    mensagem = "O título da tarefa não pode ficar vazio."
 
 class ValorInvalido(RegraDeNegocioViolada):
     """Valor fora do conjunto aceito por um campo do domínio."""
@@ -54,11 +57,13 @@ class NaoAutenticado(ErroDeDominio):
     mensagem = "É preciso entrar na conta para continuar."
 
 class CredenciaisInvalidas(NaoAutenticado):
-    """E-mail inexistente ou senha incorrea.
-    A mensagem é deliberadamente a mesma nos dois casos: dizer que o e-mail
-    não existe revelaria a um atacante quais endereços estão cadastrados.
-    """
+    """E-mail inexistente ou senha incorrea."""
     mensagem = "E-mail ou senha incorretos."
+
 class TokenInvalido(NaoAutenticado):
     """Token de acesso ausente, expirado, adulterado ou de usuário removido."""
-    mensagem = "Sessão invalida. Entre novamente"
+    mensagem = "Sessão invalida. Entre novamente."
+
+class AcessoNaoAutorizado(ErroDeDominio):
+    """Tentativa de mexer em uma tarefa que pertence a outro usuário."""
+    mensagem = "Esta tarefa pertence a outro usuário."
