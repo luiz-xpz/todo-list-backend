@@ -1,15 +1,12 @@
-
 """Operações sobre as tarefas do usuário autenticado."""
 
 from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
-
 from app.core.exceptions import AcessoNaoAutorizado, TarefaNaoEncontrada
 from app.models import Tarefa
-from app.models.enums import PrioridadeTafera
+from app.models.enums import PrioridadeTafera, StatusTarefa
 from app.repositories import TarefaRepositorio
 
 
@@ -21,6 +18,7 @@ class AlteracoesDaTarefa:
     """Campos que um PATCH pediu para alterar."""
 
     titulo: Any = NAO_INFORMADO
+    status: Any = NAO_INFORMADO
     prioridade: Any = NAO_INFORMADO
     prazo: Any = NAO_INFORMADO
 

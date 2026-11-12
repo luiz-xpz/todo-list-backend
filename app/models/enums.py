@@ -15,7 +15,7 @@ class StatusTarefa(str, Enum):
     """Situação em  que uma tarefa pode estar."""
 
     PENDENTE = "pendente"
-    CONCLUIDA = "concluida"
+    CONCLUIDA = "concluída"
 
 class PrioridadeTafera(str, Enum):
     """Nível de prioridade de uma tarefa, de menor para a maior."""

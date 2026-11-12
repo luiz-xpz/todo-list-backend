@@ -1,15 +1,12 @@
 """Entidade Tarefa: dados e regras de uma tarefa.
 """
-
 from __future__ import annotations
-
 from datetime import date, datetime
-
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, validates
-
+from sqlalchemy.ext.hybrid import  hybrid_property
 from app.core.datas import agora_utc
-from app.core.exceptions import ValorInvalido
+from app.core.exceptions import TituloObrigatorio, ValorInvalido
 from app.db.database import Base
 from app.models.enums import PrioridadeTafera, StatusTarefa
 
@@ -42,7 +39,7 @@ class Tarefa(Base):
         onupdate=agora_utc,
     )
 
-    _concluida_em = Column(
+    _concluido_em = Column(
         "concluido_em", DateTime(timezone=True), nullable=True
     )
 
@@ -68,25 +65,51 @@ class Tarefa(Base):
         self.prioridade = prioridade
         self.prazo = prazo
         self._status = StatusTarefa.PENDENTE.value
-        self._concluida_em = None
+        self._concluido_em = None
 
     # ------------------------------------------------------------------------ leitura
 
-    @property
+    @hybrid_property
     def status(self) -> StatusTarefa:
-        """Status atua como membro do enum. Somente leitura.
-        Não há setter: `tarefa.status = "concluida"` levanta `AttributeError`.
-        """
+        """Status atua como membro do enum. Somente leitura."""
 
         return StatusTarefa(self._status)
 
+    @status.expression
+    def status(cls): #noqa: N805 - assinatura exigida pelo SQLAlchemy
+        """Versão da propriedade usada dentro de consultas SQL."""
+        return cls._status
+
     @property
     def concluida_em(self) -> datetime | None:
-        """Momento da conclusão, ou `None` se a tarefa está pendente."""
-
-        return self._concluida_em
+        """Momento da conclusão, ou None se a tarefa está pendente."""
+        return self._concluido_em
 
     # ------------------------------------------------------------------------ operações
+
+    def concluir(self, agora: datetime | None = None) -> None:
+        """Conclui a tarefa e registra o momento."""
+        if self.status is StatusTarefa.CONCLUIDA:
+            return
+        self._status = StatusTarefa.CONCLUIDA.value
+        self._concluido_em = agora or agora_utc()
+    
+    def reabrir(self) -> None:
+        """Devolve a tarefa para pendente e apaga a data de conclusão."""
+        if self.status is StatusTarefa.PENDENTE:
+            return
+        self._status = StatusTarefa.PENDENTE.value
+        self._concluido_em = None
+    
+    def definir_status(
+        self, novo_status: StatusTarefa | str, agora: datetime | None = None
+    ) -> None:
+        """Aplica o status informado pela operação correspondente."""
+        status = StatusTarefa(novo_status)
+        if status is StatusTarefa.CONCLUIDA:
+            self.concluir(agora)
+        else:
+            self.reabrir()
 
     def pertence_a(self, usuario_id: int) -> bool:
         """Informa se a tarefa é de um determinado usuário."""
@@ -94,6 +117,13 @@ class Tarefa(Base):
         return self.usuario_id == usuario_id
 
     # ------------------------------------------------------------------------ validação
+
+    @validates ("titulo")
+    def _validar_titulo(self, _campo: str, valor: str) -> str:
+        """Recusa título vazio, aqui e em qualquer outro programa"""
+        if valor is None or not valor.strip():
+            raise TituloObrigatorio()
+        return valor.strip()
 
     @validates("prioridade")
     def _validar_prioridade(self, _campo: str, valor: object) -> str:

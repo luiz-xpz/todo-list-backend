@@ -30,12 +30,11 @@ _RESPOSTAS_DE_UMA_TAREFA = {
     404: {"description": "Tarefa não encontrada"},
 }
 
-
 def _montar_alteracoes(dados: TarefaUpdate) -> AlteracoesDaTarefa:
+    """Converte o corpo do PATCH em alterações de domínio."""
     return AlteracoesDaTarefa(
         **dados.model_dump(exclude_unset=True)
     )
-
 
 @router.post(
     "",
@@ -68,11 +67,6 @@ def listar_tasks(
     response: Response,
 ) -> list[TarefaOut]:
     """Lista as tarefas do usuário logado, das mais recentes para as mais antigas.
-
-    O cabeçalho `X-Total-Count` traz a quantidade de tarefas.
-
-    Devolve uma lista vazia - e não 404 - quando o usuário não tem tarefas:
-    a coleção existe, apenas está vazia.
     """
     tarefas = servico.listar(usuario.id)
     response.headers["X-Total-Count"] = str(len(tarefas))
