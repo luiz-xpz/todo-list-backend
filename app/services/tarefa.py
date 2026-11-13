@@ -1,13 +1,16 @@
+
 """Operações sobre as tarefas do usuário autenticado."""
 
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
+
 from app.core.exceptions import AcessoNaoAutorizado, TarefaNaoEncontrada
 from app.models import Tarefa
 from app.models.enums import PrioridadeTafera, StatusTarefa
-from app.repositories import TarefaRepositorio
+from app.repositories import FiltroDeTarefas, TarefaRepositorio
 
 
 NAO_INFORMADO: Any = object()
@@ -82,6 +85,11 @@ class TarefaServico:
 
         if alternacoes.informado("prazo"):
             tarefa.prazo = alternacoes.prazo
+
+        if alternacoes.informado("status"):
+            tarefa.definir_status(
+                StatusTarefa(alternacoes.status)
+            )
 
         return self._tarefas.salvar(tarefa)
 
