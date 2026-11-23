@@ -5,20 +5,17 @@ de um TarefaServico e não sabe quantas peças existem por trás dele. Se
 amanhã o serviço passar a receber um colaborador novo, muda este módulo - e
 nenhuma rota.
 """
-
 from typing import Annotated
-
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
-
 from app.core.config import obter_configuracao
 from app.core.exceptions import NaoAutenticado
 from app.core.security import HashBcrypt, HashDeSenha, TokenJWT
 from app.db.database import obter_sessao
 from app.models import Usuario
 from app.repositories import TarefaRepositorio, UsuarioRepositorio
-from app.services import TarefaServico, UsuarioServico
+from app.services import AnalyticsServico, TarefaServico, UsuarioServico
 
 _esquema_bearer = HTTPBearer(auto_error=False, description="Token recebido no login")
 
@@ -49,6 +46,11 @@ def obter_tarefa_servico(
     """Serviço de tarefas, com o repositório de que depende."""
     return TarefaServico(TarefaRepositorio(sessao))
 
+def obter_analytics_servico(
+    sessao: Session = Depends(obter_sessao),
+) -> AnalyticsServico:
+    """Serviço das análises de página Analytics (o que usa pandas)."""
+    return AnalyticsServico(TarefaRepositorio(sessao))  
 
 def obter_usuario_atual(
     credenciais: Annotated[

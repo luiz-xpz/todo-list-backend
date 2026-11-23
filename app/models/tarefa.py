@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import  hybrid_property
 from app.core.datas import agora_utc
 from app.core.exceptions import TituloObrigatorio, ValorInvalido
 from app.db.database import Base
-from app.models.enums import PrioridadeTafera, StatusTarefa
+from app.models.enums import PrioridadeTarefa, StatusTarefa
 
 
 class Tarefa(Base):
@@ -47,7 +47,7 @@ class Tarefa(Base):
         *,
         usuario_id: int,
         titulo: str,
-        prioridade: PrioridadeTafera | str = PrioridadeTafera.MEDIA,
+        prioridade: PrioridadeTarefa | str = PrioridadeTarefa.MEDIA,
         prazo: date | None = None,
     ) -> None:
         """Cria uma tarefa sempre pendente e sem data de conclusão (RN-02).
@@ -133,9 +133,9 @@ class Tarefa(Base):
         """Aceita o enum ou o texto correspondente, e grava sempre o texto."""
 
         try:
-            return PrioridadeTafera(valor).value
+            return PrioridadeTarefa(valor).value
         except ValueError as erro:
-            permitidos = ", ".join(p.value for p in PrioridadeTafera)
+            permitidos = ", ".join(p.value for p in PrioridadeTarefa)
             raise ValorInvalido(
                 f"Prioridade inválida. Valores aceitos: {permitidos}."
             ) from erro

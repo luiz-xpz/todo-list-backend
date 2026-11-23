@@ -4,7 +4,7 @@ from datetime import date
 
 from pydantic import Field
 
-from app.models.enums import PrioridadeTafera, StatusTarefa
+from app.models.enums import PrioridadeTarefa, StatusTarefa
 from app.schemas.base import DataHoraUTC, EsquemaDeEntrada, EsquemaDeSaida
 
 
@@ -18,7 +18,7 @@ class TarefaCreate(EsquemaDeEntrada):
     """
 
     titulo: str = Field(min_length=1, max_length=200)
-    prioridade: PrioridadeTafera = PrioridadeTafera.MEDIA
+    prioridade: PrioridadeTarefa = PrioridadeTarefa.MEDIA
     prazo: date | None = None
 
 
@@ -28,7 +28,7 @@ class TarefaUpdate(EsquemaDeEntrada):
 
     titulo: str | None = Field(default=None, min_length=1, max_length=200)
     status: StatusTarefa | None = None
-    prioridade: PrioridadeTafera | None = None
+    prioridade: PrioridadeTarefa | None = None
     prazo: date | None = None
 
 
@@ -40,7 +40,7 @@ class TarefaOut(EsquemaDeSaida):
     usuario_id: int
     titulo: str
     status: StatusTarefa
-    prioridade: PrioridadeTafera
+    prioridade: PrioridadeTarefa
     prazo: date | None
     criado_em: DataHoraUTC
     atualizado_em: DataHoraUTC

@@ -12,7 +12,7 @@ from app.models import Tarefa
 from app.models.enums import (
     CampoOrdenacao,
     Ordem,
-    PrioridadeTafera,
+    PrioridadeTarefa,
     StatusTarefa,
 )
 from app.repositories.base import RepositorioBase
@@ -24,7 +24,7 @@ class FiltroDeTarefas:
 
     usuario_id: int
     status: StatusTarefa | None = None
-    prioridade: PrioridadeTafera | None = None
+    prioridade: PrioridadeTarefa | None = None
     prazo_ate: date | None = None
     busca: str | None = None
     ordena_por: CampoOrdenacao = CampoOrdenacao.CRIADO_EM
@@ -45,7 +45,7 @@ class TarefaRepositorio(RepositorioBase[Tarefa]):
     """Acesso aos dados de tarefa."""
 
     _ORDEM_POR_PRIORIDADE = case(
-        PrioridadeTafera.mapa_de_peso(),
+        PrioridadeTarefa.mapa_de_peso(),
         value=Tarefa.prioridade,
         else_=99,
     )

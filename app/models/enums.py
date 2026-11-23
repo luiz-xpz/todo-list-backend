@@ -1,13 +1,14 @@
 """Enumeração do domínio."""
 from enum import Enum 
 
+
 class StatusTarefa(str, Enum):
     """Situação em  que uma tarefa pode estar."""
 
     PENDENTE = "pendente"
     CONCLUIDA = "concluida"
 
-class PrioridadeTafera(str, Enum):
+class PrioridadeTarefa(str, Enum):
     """Nível de prioridade de uma tarefa, de menor para a maior."""
 
     BAIXA = "baixa"
@@ -23,10 +24,10 @@ class PrioridadeTafera(str, Enum):
         """Mapa `valor -> peso`, no formato que o `case()` do SQL consome."""
         return {prioridade.value: prioridade.peso for prioridade in cls}
 _PESOS = {
-    PrioridadeTafera.URGENTE: 0,
-    PrioridadeTafera.ALTA: 1,
-    PrioridadeTafera.MEDIA: 2,
-    PrioridadeTafera.BAIXA: 3,
+    PrioridadeTarefa.URGENTE: 0,
+    PrioridadeTarefa.ALTA: 1,
+    PrioridadeTarefa.MEDIA: 2,
+    PrioridadeTarefa.BAIXA: 3,
 }
 
 class CampoOrdenacao(str, Enum):

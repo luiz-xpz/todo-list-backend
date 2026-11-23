@@ -9,7 +9,7 @@ from typing import Any
 
 from app.core.exceptions import AcessoNaoAutorizado, TarefaNaoEncontrada
 from app.models import Tarefa
-from app.models.enums import PrioridadeTafera, StatusTarefa
+from app.models.enums import PrioridadeTarefa, StatusTarefa
 from app.repositories import FiltroDeTarefas, PaginaDeTarefa, TarefaRepositorio
 
 # Sentinela para distinguir "campo não enviado" de "campo enviado como null".
@@ -51,7 +51,7 @@ class TarefaServico:
         self,
         usuario_id: int,
         titulo: str,
-        prioridade: PrioridadeTafera,
+        prioridade: PrioridadeTarefa,
         prazo: date | None,
     ) -> Tarefa:
         """Cria uma tarefa para o usuário autenticado.  """

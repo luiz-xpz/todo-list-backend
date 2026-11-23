@@ -1,24 +1,29 @@
+
 """Endpoints de tarefas: todos exigem login."""
  
 from datetime import date
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Response, status
-from app.api.dependencies import UsuarioAtual, obter_tarefa_servico
-from app.models.enums import CampoOrdenacao, Ordem, PrioridadeTafera, StatusTarefa
+from app.api.dependencies import UsuarioAtual, obter_analytics_servico, obter_tarefa_servico
+from app.models.enums import CampoOrdenacao, Ordem, PrioridadeTarefa, StatusTarefa
 from app.repositories import FiltroDeTarefas
-from app.schemas import ResumoOut, TarefaCreate, TarefaOut, TarefaUpdate
-from app.services import AlteracoesDaTarefa, TarefaServico
+from app.schemas import AnalyticsOut, ResumoOut, TarefaCreate, TarefaOut, TarefaUpdate
+from app.services import AlteracoesDaTarefa, AnalyticsServico, TarefaServico
+
 router = APIRouter(
     prefix="/tarefas",
     tags=["Tarefas"],
     responses={401: {"description": "Sem token, ou token inválido/expirado."}},
-    )
+)
+
 Servico = Annotated[TarefaServico, Depends(obter_tarefa_servico)]
  
 _RESPOSTAS_DE_UMA_TAREFA = {
     403: {"description": "A tarefa pertence a outro usuário."},
     404: {"description": "Tarefa não encontrada."},
 }
+
+
 def _montar_alteracoes(dados: TarefaUpdate) -> AlteracoesDaTarefa:
     """Converte o corpo o PATCH em alterações de domínio.
     exclude_unset=True' devolve apenas os campos que o cliente realmente
@@ -26,6 +31,7 @@ def _montar_alteracoes(dados: TarefaUpdate) -> AlteracoesDaTarefa:
     distinguir "nao mencionei o prazo" de "quero apagar o prazo".
     """
     return AlteracoesDaTarefa(**dados.model_dump(exclude_unset=True))
+
 
 @router.post(
     "",
@@ -42,18 +48,18 @@ def criar_task(dados: TarefaCreate, usuario: UsuarioAtual, servico: Servico) -> 
         prazo=dados.prazo,
     )
 
+
 @router.get(
     "",
     response_model=list[TarefaOut],
     summary="Listar tarefas do usuário logado"
 )
-
 def listar_tasks(
     usuario: UsuarioAtual,
     servico: Servico,
     response: Response,
     status_tarefa: Annotated[StatusTarefa | None, Query(alias="status")] = None,
-    prioridade: Annotated[PrioridadeTafera | None, Query()] = None,
+    prioridade: Annotated[PrioridadeTarefa | None, Query()] = None,
     prazo_ate: Annotated[
         date | None,
         Query(alias="prazo", description="Somente tarefas com prazo até esta data"),
@@ -85,6 +91,7 @@ def listar_tasks(
     response.headers["X-Total-Count"] = str(pagina.total)
     return pagina.tarefas
 
+
 @router.get(
     "/resumo",
     response_model=ResumoOut,
@@ -93,6 +100,25 @@ def listar_tasks(
 def resumo_task(usuario: UsuarioAtual, servico: Servico) -> ResumoOut:
     """Total, pendentes, concluídas e atrasadas - os números da página Painel."""
     return servico.resumo(usuario.id)
+
+
+@router.get(
+    "/analytics",
+    response_model=AnalyticsOut,
+    tags=["Analytics"],
+    summary="Estatísticas e métricas das tarefas",
+)
+def analytics_tasks(
+    usuario: UsuarioAtual,
+    servico: Annotated[AnalyticsServico, Depends(obter_analytics_servico)],
+    dias: Annotated[
+        int, Query(ge=1, le=90, description="Tamanho da janela de 'concluidas por dia'")
+    ] = 7,
+) -> AnalyticsOut:
+    """Taxa de conclusão, concluidas por dia e pendentes por prioridade."""
+    return servico.calcular(usuario.id, dias=dias)
+
+
 @router.get(
     "/{tarefa_id}",
     response_model=TarefaOut,
@@ -102,12 +128,14 @@ def resumo_task(usuario: UsuarioAtual, servico: Servico) -> ResumoOut:
 def buscar_task(tarefa_id: int, usuario: UsuarioAtual, servico: Servico) -> TarefaOut:
     """Devolve uma tarefa do usuráio logado."""
     return servico.buscar(tarefa_id, usuario.id)
+
+
 @router.patch(
     "/{tarefa_id}",
     response_model=TarefaOut,
     summary="Atualizar tarefa",
-    responses=_RESPOSTAS_DE_UMA_TAREFA,)
- 
+    responses=_RESPOSTAS_DE_UMA_TAREFA,
+)
 def atualizar_task(
     tarefa_id: int, dados: TarefaUpdate, usuario: UsuarioAtual, servico: Servico
 ) -> TarefaOut:
@@ -116,6 +144,8 @@ def atualizar_task(
     tarefa, conforme a RN-03.
     """
     return servico.atualizar(tarefa_id, usuario.id, _montar_alteracoes(dados))
+
+
 @router.delete(
     "/{tarefa_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -126,4 +156,3 @@ def remover_task(tarefa_id: int, usuario: UsuarioAtual, servico: Servico) -> Res
     """Remove uma tarefa definitivamente."""
     servico.remover(tarefa_id, usuario.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
- 
