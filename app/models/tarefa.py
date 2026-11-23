@@ -112,7 +112,7 @@ class Tarefa(Base):
         """Informa se o prazo venceu com a tarefa ainda pendente."""
         if self.prazo is None or self.status is StatusTarefa.CONCLUIDA:
             return False
-        return self.prazo < (hoje or date.todya())
+        return self.prazo < (hoje or date.today())
     
     def pertence_a(self, usuario_id: int) -> bool:
         """Informa se a tarefa é de um determinado usuário."""

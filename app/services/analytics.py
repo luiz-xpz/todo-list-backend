@@ -29,6 +29,9 @@ class Analytics:
     concluidas_na_janela: int
     concluidas_por_dia: list[dict]
     pendentes_por_prioridade: dict[PrioridadeTarefa, int]
+    tempo_medio_conclusao_dias: float | None
+    concluidas_por_dia_da_semana: dict[str, int]
+    percentual_no_prazo: int | None
 
 
 class AnalyticsServico:
@@ -76,6 +79,13 @@ class AnalyticsServico:
             pendentes_por_prioridade=self._pendentes_por_prioridade(
                 pendentes
             ),
+            tempo_medio_conclusao_dias=self._tempo_medio_conclusao(
+                concluidas
+            ),
+            concluidas_por_dia_da_semana=self._concluidas_por_dia_da_semana(
+                concluidas
+            ),
+            percentual_no_prazo=self._percentual_no_prazo(concluidas),
         )
 
     # Tabela de tarefas
@@ -89,9 +99,15 @@ class AnalyticsServico:
             {
                 "status": [t.status.value for t in tarefas],
                 "prioridade": [t.prioridade for t in tarefas],
+                "criado_em": [t.criado_em for t in tarefas],
                 "concluido_em": [t.concluida_em for t in tarefas],
+                "prazo": [t.prazo for t in tarefas],
             }
         )
+
+        tabela["criado_em"] = pd.to_datetime(
+            tabela["criado_em"], utc=True
+        ).dt.tz_convert(fuso_do_servidor)
 
         tabela["concluido_em"] = pd.to_datetime(
             tabela["concluido_em"], utc=True
@@ -152,3 +168,64 @@ class AnalyticsServico:
             PrioridadeTarefa(prioridade): int(qtd)
             for prioridade, qtd in contagem.items()
         }
+
+    @staticmethod
+    def _tempo_medio_conclusao(
+        concluidas: pd.DataFrame
+    ) -> float | None:
+
+        validas = concluidas.dropna(
+            subset=["criado_em", "concluido_em"]
+        )
+
+        if validas.empty:
+            return None
+
+        duracoes = (
+            validas["concluido_em"] - validas["criado_em"]
+        ).dt.total_seconds() / 86400
+
+        return float(duracoes.mean())
+
+    @staticmethod
+    def _concluidas_por_dia_da_semana(
+        concluidas: pd.DataFrame
+    ) -> dict[str, int]:
+
+        dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+        validas = concluidas.dropna(
+            subset=["concluido_em"]
+        )
+
+        contagem = (
+            validas["concluido_em"]
+            .dt.dayofweek
+            .value_counts()
+            .reindex(range(7), fill_value=0)
+        )
+
+        return {
+            dia: int(contagem[i])
+            for i, dia in enumerate(dias)
+        }
+
+    @staticmethod
+    def _percentual_no_prazo(
+        concluidas: pd.DataFrame
+    ) -> int | None:
+
+        com_prazo = concluidas.dropna(
+            subset=["prazo", "concluido_em"]
+        )
+
+        if com_prazo.empty:
+            return None
+
+        dentro_do_prazo = (
+            com_prazo["concluido_em"].dt.date <= com_prazo["prazo"]
+        )
+
+        return arredondar(
+            dentro_do_prazo.sum() / len(com_prazo) * 100
+        )

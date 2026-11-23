@@ -28,3 +28,13 @@ class AnalyticsOut(EsquemaDeSaida):
     concluidas_na_janela: int = Field(description="Soma de `concluidas_por_dia`")
     concluidas_por_dia: list[ConcluidasNoDia]
     pendentes_por_prioridade: dict[PrioridadeTarefa, int]
+    tempo_medio_conclusao_dias: float | None = Field(
+        description="Média de dias entre criar e concluir; `null` se nada foi concluído"
+    )
+    concluidas_por_dia_da_semana: dict[str, int] = Field(
+        description="Conclusões de todo o histórico por dia da semana, de `Seg` a `Dom`"
+    )
+    percentual_no_prazo: int | None = Field(
+        description="Das concluídas que tinham prazo, % concluídas até o prazo;"
+        "`null` se nenhuma tinha prazo"
+    )

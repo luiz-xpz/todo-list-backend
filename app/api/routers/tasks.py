@@ -115,7 +115,12 @@ def analytics_tasks(
         int, Query(ge=1, le=90, description="Tamanho da janela de 'concluidas por dia'")
     ] = 7,
 ) -> AnalyticsOut:
-    """Taxa de conclusão, concluidas por dia e pendentes por prioridade."""
+    """Taxa de conclusao, concluidas por dia, pendentes por prioridade, tempo
+    medio para concluir, conclusoes por dia da semana e percentual no prazo.
+
+    Os quatro primeiros numeros sao os mesmos que a página Analytics do
+    front-end calcula hoje no navegador.
+    """
     return servico.calcular(usuario.id, dias=dias)
 
 
